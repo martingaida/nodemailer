@@ -33,7 +33,7 @@ app.post('/send', (req, res) => {
         service: 'Gmail',
         auth: {
           user: 'therapy@nataliegaida.com', // generated ethereal user
-          pass: '2022Alma2022!', // generated ethereal password
+          pass: '', // generated ethereal password
         },
     });
     
