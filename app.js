@@ -1,4 +1,3 @@
-const express = require('express');
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const dotenv = require('dotenv');
