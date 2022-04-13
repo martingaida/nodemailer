@@ -1,11 +1,9 @@
 const express = require('express');
-// const bodyParser = require('body-parser');
-// const expressHandle = require('express-handlebars');
-// const path = require('path');
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const dotenv = require('dotenv');
 
+// Load environment variables from .env
 dotenv.config();
 
 // Environment variables
@@ -58,7 +56,8 @@ async function sendMail() {
         return error
     }
 };
-  
+
+// Run app
 sendMail()
     .then((result) => console.log('Email sent...', result))
     .catch((error) => console.log(error.message));
