@@ -36,11 +36,11 @@ const output = `<h1>IT'S WORKING!</h1>`;
 
 // Setup email data
 const email = {
-    from: `Nodemailer Test <${USER}>`, // sender address
-    to: TARGET_EMAIL, // list of receivers
-    subject: "Nodemailer Test", // Subject line
-    text: 'Test. Test. Test.', // plain text body
-    html: output, // html body
+    from: `Nodemailer Test <${USER}>`,
+    to: TARGET_EMAIL,
+    subject: 'Nodemailer Test',
+    text: 'Test. Test. Test.',
+    html: output,
 };
 
 // SendMail function
