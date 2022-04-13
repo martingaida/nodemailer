@@ -3,8 +3,20 @@ const bodyParser = require('body-parser');
 const expressHandle = require('express-handlebars');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
+const dotenv = require('dotenv');
 
 const app = express();
+dotenv.config();
+
+// Environment variables
+const port = process.env.PORT;
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI;
+const REFRESH_TOKEN = process.env.REFRESH_TOKEN;
+const USER = process.env.USER;
+const TARGET_EMAIL = process.env.TARGET_EMAIL;
 
 // View engine setup
 app.engine('handlebars', expressHandle.engine());
@@ -17,45 +29,56 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Google authentication - OAuth client
+const OAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+OAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+
+// Setup email body
+const output = `<h1>IT'S WORKING!</h1>`;
+
+// Setup email data
+const email = {
+    from: USER, // sender address
+    to: TARGET_EMAIL, // list of receivers
+    subject: "Nodemailer Test", // Subject line
+    text: 'Test. Test. Test.', // plain text body
+    html: output, // html body
+};
+
+// SendMail function
+async function sendMail() {
+    try {
+        const ACCESS_TOKEN = await OAuth2Client.getAccessToken()
+
+        // Nodemailer setup
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                type: 'OAuth2',
+                user: USER,
+                clientId: CLIENT_ID,
+                clientSecret: CLIENT_SECRET,
+                refreshToken: REFRESH_TOKEN,
+                accessToken: ACCESS_TOKEN
+            }
+        })
+        const result = await transporter.sendMail(email)
+        console.log(result)
+        return result
+
+    } catch (error) {
+        console.log(error)
+    }
+};
+
+// Default route
 app.get('/', (req, res) => {
-    res.render('form', {msg:'Ready to send.'});
+    res.render('form', { msg:'Ready to send.' });
 });
 
+// Send route
 app.post('/send', (req, res) => {
-    const output = `
-        <h1>IT'S WORKING!</h1>
-    `;
-
-    let transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false, // true for 465, false for other ports
-        service: 'Gmail',
-        auth: {
-          user: 'therapy@nataliegaida.com', // generated ethereal user
-          pass: '', // generated ethereal password
-        },
-    });
-    
-    // setup email data
-    const email = {
-        from: '"Martin 👻" <martingaida.mg@gmail.com>', // sender address
-        to: 'nowicki.natalie@gmail.com', // list of receivers
-        subject: "Forgotten Password Test ✔", // Subject line
-        text: `It's working!`, // plain text body
-        html: output, // html body
-    };
-
-    // send email with defined transport object
-    transporter.sendMail(email, (error, info) => {
-        if (error) {
-            res.render('form', {msg:'Error'})
-            return console.log(error);
-        }
-        console.log('Message sent: %s', info.messageId);
-        res.render('form', {msg:'Email has been successfully sent.'})
-    });    
-
+    sendMail()
 });
 
-app.listen(3000, () => console.log('Server running...'));
+app.listen(port, () => console.log('Server running...'));
